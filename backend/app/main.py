@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.schemas.analysis import TextAnalysisRequest
-from app.services.rules.engine import run_scam_rules
+from app.schemas.analysis import AnalysisResponse, TextAnalysisRequest
+from app.services.analysis import analyze_text
 
 app = FastAPI(
     title="ScamLens API",
@@ -28,28 +29,11 @@ def health_check() -> dict[str, str]:
     }
 
 
-@app.post("/api/v1/analyses/text")
+@app.post(
+    "/api/v1/analyses/text",
+    response_model=AnalysisResponse,
+)
 def create_text_analysis(
     request: TextAnalysisRequest,
-) -> dict[str, object]:
-    matches = run_scam_rules(request.text)
-    total_score = sum(match.score for match in matches)
-
-    return {
-        "message": "Text analyzed successfully.",
-        "text": request.text,
-        "character_count": len(request.text),
-        "risk_score": min(total_score, 100),
-        "findings": [
-            {
-                "rule_id": match.rule_id,
-                "title": match.title,
-                "category": match.category,
-                "severity": match.severity.value,
-                "evidence": match.evidence,
-                "explanation": match.explanation,
-                "score": match.score,
-            }
-            for match in matches
-        ],
-    }
+) -> AnalysisResponse:
+    return analyze_text(request.text)

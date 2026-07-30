@@ -1,4 +1,19 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field, field_validator
+
+
+class RiskLevel(str, Enum):
+    LOW = "low"
+    MODERATE = "moderate"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+class FindingSeverity(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
 
 
 class TextAnalysisRequest(BaseModel):
@@ -17,3 +32,28 @@ class TextAnalysisRequest(BaseModel):
             raise ValueError("Text cannot be empty.")
 
         return cleaned_text
+
+
+class FindingResponse(BaseModel):
+    rule_id: str
+    title: str
+    category: str
+    severity: FindingSeverity
+    evidence: str
+    explanation: str
+    score_contribution: int
+
+
+class ScoreBreakdownItem(BaseModel):
+    signal: str
+    points: int
+
+
+class AnalysisResponse(BaseModel):
+    risk_score: int = Field(ge=0, le=100)
+    risk_level: RiskLevel
+    primary_category: str
+    summary: str
+    findings: list[FindingResponse]
+    score_breakdown: list[ScoreBreakdownItem]
+    recommended_actions: list[str]
