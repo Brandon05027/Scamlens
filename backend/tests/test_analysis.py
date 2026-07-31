@@ -129,3 +129,72 @@ def test_normal_url_does_not_create_url_warning() -> None:
     }
 
     assert detected_rule_ids.isdisjoint(url_rule_ids)
+    assert body["identity_signals"]["urls"] == [
+        "https://www.rutgers.edu/academics"
+    ]
+    assert body["privacy_analysis"]["total_redactions"] == 0
+
+
+def test_personal_information_is_redacted() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "Contact brandon@example.com or call "
+                "732-555-1234 for account support."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    privacy_analysis = response.json()["privacy_analysis"]
+    redacted_text = privacy_analysis["redacted_text"]
+
+    assert "[EMAIL_ADDRESS]" in redacted_text
+    assert "[PHONE_NUMBER]" in redacted_text
+    assert "brandon@example.com" not in redacted_text
+    assert "732-555-1234" not in redacted_text
+    assert privacy_analysis["total_redactions"] == 2
+
+
+def test_message_without_pii_has_zero_redactions() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "Our study group will meet in the library "
+                "tomorrow afternoon."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    privacy_analysis = response.json()["privacy_analysis"]
+
+    assert privacy_analysis["total_redactions"] == 0
+    assert privacy_analysis["redactions"] == []
+
+
+def test_account_and_ssn_are_redacted() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "My SSN is 123-45-6789 and my "
+                "account number is 123456789."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    privacy_analysis = response.json()["privacy_analysis"]
+    redacted_text = privacy_analysis["redacted_text"]
+
+    assert "123-45-6789" not in redacted_text
+    assert "123456789" not in redacted_text
+    assert "[SSN]" in redacted_text
+    assert "[ACCOUNT_NUMBER]" in redacted_text
+    assert privacy_analysis["total_redactions"] == 2

@@ -4,7 +4,10 @@ from app.schemas.analysis import (
     FindingSeverity,
     IdentitySignalsResponse,
     ScoreBreakdownItem,
+    PrivacyAnalysisResponse,
+    RedactionCountResponse,
 )
+from app.services.pii import redact_pii
 from app.services.identity import analyze_identity_signals
 from app.services.recommendations import build_recommendations
 from app.services.rules.engine import run_scam_rules
@@ -18,6 +21,7 @@ from app.services.scoring import (
 def analyze_text(text: str) -> AnalysisResponse:
     rule_matches = run_scam_rules(text)
     identity_analysis = analyze_identity_signals(text)
+    pii_analysis = redact_pii(text)
 
     matches = [
         *rule_matches,
@@ -72,4 +76,15 @@ def analyze_text(text: str) -> AnalysisResponse:
             emails=list(identity_analysis.emails),
             urls=list(identity_analysis.urls),
         ),
-    )
+        privacy_analysis=PrivacyAnalysisResponse(
+    redacted_text=pii_analysis.redacted_text,
+    total_redactions=pii_analysis.total_redactions,
+    redactions=[
+        RedactionCountResponse(
+            pii_type=redaction.pii_type,
+            count=redaction.count,
+        )
+            for redaction in pii_analysis.redactions
+        ],
+    ),
+)

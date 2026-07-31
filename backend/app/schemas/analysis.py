@@ -53,6 +53,16 @@ class IdentitySignalsResponse(BaseModel):
     emails: list[str]
     urls: list[str]
 
+class RedactionCountResponse(BaseModel):
+    pii_type: str
+    count: int = Field(ge=1)
+
+
+class PrivacyAnalysisResponse(BaseModel):
+    redacted_text: str
+    total_redactions: int = Field(ge=0)
+    redactions: list[RedactionCountResponse]
+
 class AnalysisResponse(BaseModel):
     risk_score: int = Field(ge=0, le=100)
     risk_level: RiskLevel
@@ -62,3 +72,4 @@ class AnalysisResponse(BaseModel):
     score_breakdown: list[ScoreBreakdownItem]
     recommended_actions: list[str]
     identity_signals: IdentitySignalsResponse
+    privacy_analysis: PrivacyAnalysisResponse
