@@ -32,4 +32,29 @@ def build_recommendations(matches: list[RuleMatch]) -> list[str]:
             "Slow down and verify the request before taking any immediate action."
         )
 
+    if "ip-address-url" in rule_ids:
+        actions.append(
+            "Do not open the IP-address link until its destination "
+            "and sender have been independently verified."
+        )
+
+    if "shortened-url" in rule_ids:
+        actions.append(
+            "Expand the shortened link with a trusted link-preview "
+            "service before deciding whether to open it."
+        )
+
+    if "punycode-domain" in rule_ids:
+        actions.append(
+            "Compare the encoded domain with the organization's official "
+            "website before entering any information."
+        )
+
+    if "excessive-subdomains" in rule_ids:
+        actions.append(
+            "Read the domain from right to left and verify the actual "
+            "registered website rather than trusting familiar words "
+            "at the beginning of the link."
+        )
+        
     return list(dict.fromkeys(actions))

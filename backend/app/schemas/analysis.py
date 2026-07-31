@@ -49,6 +49,10 @@ class ScoreBreakdownItem(BaseModel):
     points: int
 
 
+class IdentitySignalsResponse(BaseModel):
+    emails: list[str]
+    urls: list[str]
+
 class AnalysisResponse(BaseModel):
     risk_score: int = Field(ge=0, le=100)
     risk_level: RiskLevel
@@ -57,3 +61,4 @@ class AnalysisResponse(BaseModel):
     findings: list[FindingResponse]
     score_breakdown: list[ScoreBreakdownItem]
     recommended_actions: list[str]
+    identity_signals: IdentitySignalsResponse

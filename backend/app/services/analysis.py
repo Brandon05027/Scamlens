@@ -2,8 +2,10 @@ from app.schemas.analysis import (
     AnalysisResponse,
     FindingResponse,
     FindingSeverity,
+    IdentitySignalsResponse,
     ScoreBreakdownItem,
 )
+from app.services.identity import analyze_identity_signals
 from app.services.recommendations import build_recommendations
 from app.services.rules.engine import run_scam_rules
 from app.services.scoring import (
@@ -14,7 +16,13 @@ from app.services.scoring import (
 
 
 def analyze_text(text: str) -> AnalysisResponse:
-    matches = run_scam_rules(text)
+    rule_matches = run_scam_rules(text)
+    identity_analysis = analyze_identity_signals(text)
+
+    matches = [
+        *rule_matches,
+        *identity_analysis.matches,
+    ]
 
     score = calculate_risk_score(matches)
     risk_level = determine_risk_level(score)
@@ -60,4 +68,8 @@ def analyze_text(text: str) -> AnalysisResponse:
         findings=findings,
         score_breakdown=score_breakdown,
         recommended_actions=build_recommendations(matches),
+        identity_signals=IdentitySignalsResponse(
+            emails=list(identity_analysis.emails),
+            urls=list(identity_analysis.urls),
+        ),
     )
