@@ -6,7 +6,11 @@ from app.schemas.analysis import (
     ScoreBreakdownItem,
     PrivacyAnalysisResponse,
     RedactionCountResponse,
+    AIAnalysisResponse,
+    AIEvidenceResponse,
 )
+
+from app.services.ai.service import analyze_with_ai
 from app.services.pii import redact_pii
 from app.services.identity import analyze_identity_signals
 from app.services.recommendations import build_recommendations
@@ -22,6 +26,7 @@ def analyze_text(text: str) -> AnalysisResponse:
     rule_matches = run_scam_rules(text)
     identity_analysis = analyze_identity_signals(text)
     pii_analysis = redact_pii(text)
+    ai_status, ai_provider, ai_result = analyze_with_ai(pii_analysis.redacted_text)
 
     matches = [
         *rule_matches,
@@ -60,8 +65,43 @@ def analyze_text(text: str) -> AnalysisResponse:
         )
     else:
         summary = (
-            "ScamLens did not detect any currently supported warning patterns. "
-            "This does not guarantee that the message is safe."
+            "ScamLens did not detect any currently supported "
+            "warning patterns. This does not guarantee that "
+            "the message is safe."
+        )
+
+    if ai_result is None:
+        ai_analysis_response = AIAnalysisResponse(
+            status=ai_status,
+            provider=ai_provider,
+            category=None,
+            confidence=None,
+            summary=(
+                "AI contextual analysis was unavailable. "
+                "The deterministic analysis still completed."
+            ),
+            evidence=[],
+            limitations=[
+                "No AI result was used for this analysis."
+            ],
+            privacy_applied=True,
+        )
+    else:
+        ai_analysis_response = AIAnalysisResponse(
+            status=ai_status,
+            provider=ai_provider,
+            category=ai_result.category,
+            confidence=ai_result.confidence,
+            summary=ai_result.summary,
+            evidence=[
+                AIEvidenceResponse(
+                    text=evidence.text,
+                    reason=evidence.reason,
+                )
+                for evidence in ai_result.evidence
+            ],
+            limitations=ai_result.limitations,
+            privacy_applied=True,
         )
 
     return AnalysisResponse(
@@ -77,14 +117,15 @@ def analyze_text(text: str) -> AnalysisResponse:
             urls=list(identity_analysis.urls),
         ),
         privacy_analysis=PrivacyAnalysisResponse(
-    redacted_text=pii_analysis.redacted_text,
-    total_redactions=pii_analysis.total_redactions,
-    redactions=[
-        RedactionCountResponse(
-            pii_type=redaction.pii_type,
-            count=redaction.count,
-        )
-            for redaction in pii_analysis.redactions
-        ],
-    ),
-)
+            redacted_text=pii_analysis.redacted_text,
+            total_redactions=pii_analysis.total_redactions,
+            redactions=[
+                RedactionCountResponse(
+                    pii_type=redaction.pii_type,
+                    count=redaction.count,
+                )
+                for redaction in pii_analysis.redactions
+            ],
+        ),
+        ai_analysis=ai_analysis_response,
+    )

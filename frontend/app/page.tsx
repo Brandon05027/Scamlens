@@ -291,6 +291,114 @@ export default function HomePage() {
                 ))}
               </ul>
             </article>
+                        <article className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row">
+                <div>
+                  <h2 className="text-2xl font-bold">
+                    Privacy-protected preview
+                  </h2>
+
+                  <p className="mt-2 text-sm text-slate-400">
+                    Personal information is replaced locally before external
+                    AI analysis.
+                  </p>
+                </div>
+
+                <span className="h-fit rounded-full bg-slate-800 px-3 py-1 text-sm font-semibold text-cyan-300">
+                  {result.privacy_analysis.total_redactions} redaction
+                  {result.privacy_analysis.total_redactions === 1 ? "" : "s"}
+                </span>
+              </div>
+
+              <pre className="mt-5 whitespace-pre-wrap break-words rounded-xl border border-slate-700 bg-slate-950 p-4 font-sans leading-7 text-slate-300">
+                {result.privacy_analysis.redacted_text}
+              </pre>
+
+              {result.privacy_analysis.redactions.length > 0 && (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {result.privacy_analysis.redactions.map((redaction) => (
+                    <span
+                      key={redaction.pii_type}
+                      className="rounded-full border border-slate-700 px-3 py-1 text-sm text-slate-300"
+                    >
+                      {formatCategory(redaction.pii_type)}: {redaction.count}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </article>
+                        <article className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row">
+                <div>
+                  <h2 className="text-2xl font-bold">
+                    AI contextual analysis
+                  </h2>
+
+                  <p className="mt-2 text-sm text-slate-400">
+                    This result is separate from the deterministic risk score.
+                  </p>
+                </div>
+
+                <span className="h-fit rounded-full bg-slate-800 px-3 py-1 text-sm text-cyan-300">
+                  {result.ai_analysis.status}
+                </span>
+              </div>
+
+              <p className="mt-5 leading-7 text-slate-300">
+                {result.ai_analysis.summary}
+              </p>
+
+              {result.ai_analysis.category && (
+                <div className="mt-4 flex flex-wrap gap-3 text-sm">
+                  <span className="rounded-full border border-slate-700 px-3 py-1">
+                    Category:{" "}
+                    {formatCategory(result.ai_analysis.category)}
+                  </span>
+
+                  {result.ai_analysis.confidence !== null && (
+                    <span className="rounded-full border border-slate-700 px-3 py-1">
+                      Confidence:{" "}
+                      {Math.round(result.ai_analysis.confidence * 100)}%
+                    </span>
+                  )}
+
+                  <span className="rounded-full border border-slate-700 px-3 py-1">
+                    Provider: {result.ai_analysis.provider}
+                  </span>
+                </div>
+              )}
+
+              {result.ai_analysis.evidence.length > 0 && (
+                <div className="mt-5 space-y-3">
+                  {result.ai_analysis.evidence.map((evidence) => (
+                    <div
+                      key={`${evidence.text}-${evidence.reason}`}
+                      className="rounded-xl bg-slate-950 p-4"
+                    >
+                      <strong className="text-cyan-300">
+                        “{evidence.text}”
+                      </strong>
+
+                      <p className="mt-2 text-sm leading-6 text-slate-400">
+                        {evidence.reason}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {result.ai_analysis.limitations.length > 0 && (
+                <div className="mt-5">
+                  <h3 className="font-semibold">Limitations</h3>
+
+                  <ul className="mt-2 space-y-2 text-sm text-slate-400">
+                    {result.ai_analysis.limitations.map((limitation) => (
+                      <li key={limitation}>• {limitation}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </article>
           </section>
         )}
 

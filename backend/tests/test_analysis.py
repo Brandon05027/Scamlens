@@ -198,3 +198,72 @@ def test_account_and_ssn_are_redacted() -> None:
     assert "[SSN]" in redacted_text
     assert "[ACCOUNT_NUMBER]" in redacted_text
     assert privacy_analysis["total_redactions"] == 2
+def test_mock_ai_analysis_is_returned() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "We will send you a check so you can "
+                "purchase your equipment."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    ai_analysis = response.json()["ai_analysis"]
+
+    assert ai_analysis["status"] == "completed"
+    assert ai_analysis["provider"] == "mock"
+    assert ai_analysis["category"] == "fake_job"
+    assert ai_analysis["privacy_applied"] is True
+
+
+def test_ai_analysis_is_separate_from_risk_score() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "This message discusses equipment and a check "
+                "for testing purposes."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    finding_score_total = sum(
+        finding["score_contribution"]
+        for finding in body["findings"]
+    )
+
+    assert "ai_analysis" in body
+    assert body["risk_score"] == finding_score_total
+
+
+def test_ai_analysis_uses_privacy_redaction() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "Contact brandon@example.com. We will send "
+                "you a check to purchase equipment."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    assert "[EMAIL_ADDRESS]" in body[
+        "privacy_analysis"
+    ]["redacted_text"]
+
+    assert "brandon@example.com" not in body[
+        "privacy_analysis"
+    ]["redacted_text"]
+
+    assert body["ai_analysis"]["privacy_applied"] is True

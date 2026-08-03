@@ -73,3 +73,23 @@ class AnalysisResponse(BaseModel):
     recommended_actions: list[str]
     identity_signals: IdentitySignalsResponse
     privacy_analysis: PrivacyAnalysisResponse
+    ai_analysis: AIAnalysisResponse
+
+class AIEvidenceResponse(BaseModel):
+    text: str
+    reason: str
+
+
+class AIAnalysisResponse(BaseModel):
+    status: str
+    provider: str
+    category: str | None
+    confidence: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+    )
+    summary: str
+    evidence: list[AIEvidenceResponse]
+    limitations: list[str]
+    privacy_applied: bool
