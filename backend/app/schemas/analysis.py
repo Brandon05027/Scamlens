@@ -93,3 +93,12 @@ class AIAnalysisResponse(BaseModel):
     evidence: list[AIEvidenceResponse]
     limitations: list[str]
     privacy_applied: bool
+
+class OCRAnalysisResponse(BaseModel):
+    provider: str
+    extracted_text: str
+
+
+class ScreenshotAnalysisResponse(BaseModel):
+    ocr: OCRAnalysisResponse
+    analysis: AnalysisResponse
