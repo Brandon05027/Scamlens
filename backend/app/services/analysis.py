@@ -10,6 +10,7 @@ from app.schemas.analysis import (
     AIEvidenceResponse,
 )
 
+from app.services.ai.providers import AIProvider
 from app.services.ai.service import analyze_with_ai
 from app.services.pii import redact_pii
 from app.services.identity import analyze_identity_signals
@@ -22,11 +23,14 @@ from app.services.scoring import (
 )
 
 
-def analyze_text(text: str) -> AnalysisResponse:
+def analyze_text(
+    text: str,
+    ai_provider: AIProvider | None = None,
+) -> AnalysisResponse:
     rule_matches = run_scam_rules(text)
     identity_analysis = analyze_identity_signals(text)
     pii_analysis = redact_pii(text)
-    ai_status, ai_provider, ai_result = analyze_with_ai(pii_analysis.redacted_text)
+    ai_status, ai_provider_name, ai_result = analyze_with_ai(pii_analysis.redacted_text, provider=ai_provider,)
 
     matches = [
         *rule_matches,
@@ -73,7 +77,7 @@ def analyze_text(text: str) -> AnalysisResponse:
     if ai_result is None:
         ai_analysis_response = AIAnalysisResponse(
             status=ai_status,
-            provider=ai_provider,
+            provider=ai_provider_name,
             category=None,
             confidence=None,
             summary=(
@@ -89,7 +93,7 @@ def analyze_text(text: str) -> AnalysisResponse:
     else:
         ai_analysis_response = AIAnalysisResponse(
             status=ai_status,
-            provider=ai_provider,
+            provider=ai_provider_name,
             category=ai_result.category,
             confidence=ai_result.confidence,
             summary=ai_result.summary,

@@ -48,8 +48,11 @@ def analyze_with_ai(
     provider: AIProvider | None = None,
 ) -> tuple[str, str, AIContextResult | None]:
     try:
-        selected_provider = provider or build_ai_provider()
-        result = selected_provider.analyze(redacted_text)
+        selected_provider = provider or build_ai_provider() #if a test supplies the provider then selected_provider = provider will be used. If not, it will use the normal provider from the env.
+
+        result = selected_provider.analyze(
+            redacted_text
+        )
 
         return (
             "completed",
