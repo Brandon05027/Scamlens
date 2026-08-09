@@ -7,7 +7,22 @@ from app.services.rules.models import (
     RuleMatch,
     RuleSeverity,
 )
+COMPANY_DOMAINS: dict[str, tuple[str, ...]] = {
+    "amazon": ("amazon.com",),
+    "apple": ("apple.com",),
+    "google": ("google.com",),
+    "microsoft": ("microsoft.com",),
+    "netflix": ("netflix.com",),
+    "paypal": ("paypal.com",),
+}
 
+FREE_EMAIL_DOMAINS = {
+    "gmail.com",
+    "outlook.com",
+    "hotmail.com",
+    "yahoo.com",
+    "icloud.com",
+}
 
 EMAIL_PATTERN = re.compile(
     r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"
@@ -174,8 +189,73 @@ def analyze_identity_signals(text: str) -> IdentityAnalysis:
             )
             detected_rule_ids.add("excessive-subdomains")
 
+    company_matches = find_company_domain_mismatches(
+        text,
+        emails,
+    )
+
+    matches.extend(company_matches)
+
     return IdentityAnalysis(
         emails=tuple(emails),
         urls=tuple(urls),
         matches=tuple(matches),
     )
+
+def get_email_domain(email: str) -> str:
+    _, _, domain = email.lower().rpartition("@")
+    return domain
+
+def domain_matches_expected(
+    domain: str,
+    expected_domains: tuple[str, ...],
+) -> bool:
+    return any(
+        domain == expected_domain
+        or domain.endswith(f".{expected_domain}")
+        for expected_domain in expected_domains
+    )
+
+def find_company_domain_mismatches(
+    text: str,
+    emails: tuple[str, ...] | list[str],
+) -> list[RuleMatch]:
+    lowered_text = text.lower()
+    matches: list[RuleMatch] = []
+
+    for company, expected_domains in COMPANY_DOMAINS.items():
+        if company not in lowered_text:
+            continue
+
+        for email in emails:
+            domain = get_email_domain(email)
+
+            if not domain:
+                continue
+
+            if domain_matches_expected(
+                domain,
+                expected_domains,
+            ):
+                continue
+
+            expected_display = " or ".join(expected_domains)
+
+            matches.append(
+                RuleMatch(
+                    rule_id="company-domain-mismatch",
+                    title="Company and email domain do not match",
+                    category="phishing",
+                    severity=RuleSeverity.HIGH,
+                    score=20,
+                    evidence=email,
+                    explanation=(
+                        f"The message mentions {company.title()}, "
+                        f"but the email address uses {domain} instead "
+                        f"of an expected company domain such as "
+                        f"{expected_display}."
+                    ),
+                )
+            )
+
+    return matches

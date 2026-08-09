@@ -267,3 +267,71 @@ def test_ai_analysis_uses_privacy_redaction() -> None:
     ]["redacted_text"]
 
     assert body["ai_analysis"]["privacy_applied"] is True
+
+def test_company_email_domain_mismatch_is_detected() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "I am a recruiter from Microsoft. "
+                "Contact me at microsoftjobs2026@gmail.com "
+                "to continue your application."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    rule_ids = {
+        finding["rule_id"]
+        for finding in body["findings"]
+    }
+
+    assert "company-domain-mismatch" in rule_ids
+def test_matching_company_email_domain_is_not_flagged() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "I am a recruiter from Microsoft. "
+                "Contact me at recruiter@microsoft.com "
+                "about your upcoming interview."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    rule_ids = {
+        finding["rule_id"]
+        for finding in body["findings"]
+    }
+
+    assert "company-domain-mismatch" not in rule_ids
+
+def test_company_email_subdomain_is_accepted() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "Microsoft recruiting can be reached at "
+                "recruiter@careers.microsoft.com "
+                "for interview scheduling."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    rule_ids = {
+        finding["rule_id"]
+        for finding in body["findings"]
+    }
+
+    assert "company-domain-mismatch" not in rule_ids
