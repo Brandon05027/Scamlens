@@ -1,9 +1,9 @@
 "use client";
 
-import type { FormEvent } from "react";
+import type { FormEvent, ChangeEvent } from "react";
 import { useState } from "react";
 
-import { analyzeText } from "@/lib/api";
+import { analyzeText, analyzeScreenshot } from "@/lib/api";
 import type { AnalysisResult, RiskLevel } from "@/types/analysis";
 
 const SAMPLE_SCAM_MESSAGE = `This is urgent. We will send you a check.
@@ -38,6 +38,16 @@ export default function HomePage() {
   const [error, setError] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  const [screenshot, setScreenshot] = useState<File | null>(
+  null,
+);
+
+const [screenshotPreview, setScreenshotPreview] = useState<
+  string | null
+>(null);
+
+const [ocrText, setOcrText] = useState("");
+
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
   ): Promise<void> {
@@ -68,6 +78,53 @@ export default function HomePage() {
       setIsAnalyzing(false);
     }
   }
+function handleScreenshotChange(
+  event: ChangeEvent<HTMLInputElement>,
+): void {
+  const file = event.target.files?.[0];
+
+  if (!file) {
+    return;
+  }
+
+  if (screenshotPreview) {
+    URL.revokeObjectURL(screenshotPreview);
+  }
+
+  setScreenshot(file);
+  setScreenshotPreview(URL.createObjectURL(file));
+  setOcrText("");
+  setResult(null);
+  setError("");
+}
+
+async function handleScreenshotAnalysis(): Promise<void> {
+  if (!screenshot) {
+    setError("Choose a screenshot before analyzing.");
+    return;
+  }
+
+  setIsAnalyzing(true);
+  setError("");
+  setResult(null);
+  setOcrText("");
+
+  try {
+    const screenshotResult =
+      await analyzeScreenshot(screenshot);
+
+    setOcrText(screenshotResult.ocr.extracted_text);
+    setResult(screenshotResult.analysis); //It makes sure the screenshot analysis feed the same result
+  } catch (requestError) {
+    if (requestError instanceof Error) {
+      setError(requestError.message);
+    } else {
+      setError("An unexpected error occurred.");
+    }
+  } finally {
+    setIsAnalyzing(false);
+  }
+}
 
   return (
     <main className="min-h-screen bg-slate-950 px-5 py-10 text-slate-100">
@@ -171,7 +228,76 @@ export default function HomePage() {
             </button>
           </form>
         </section>
+        <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-xl sm:p-7">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
+              Screenshot analysis
+            </p>
 
+            <h2 className="mt-2 text-2xl font-bold">
+              Upload a suspicious screenshot
+            </h2>
+
+            <p className="mt-2 text-slate-400">
+              Upload a PNG, JPEG, or WebP screenshot up to 5 MB.
+              ScamLens will extract the text with OCR and analyze it.
+            </p>
+          </div>
+
+          <label className="mt-5 block">
+            <span className="sr-only">
+              Choose suspicious screenshot
+            </span>
+
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={handleScreenshotChange}
+              disabled={isAnalyzing}
+              className="block w-full rounded-xl border border-slate-700 bg-slate-950 p-3 text-sm text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-cyan-400 file:px-4 file:py-2 file:font-semibold file:text-slate-950 hover:file:bg-cyan-300"
+            />
+          </label>
+
+          {screenshotPreview && (
+            <div className="mt-5">
+              <p className="mb-2 text-sm font-semibold text-slate-300">
+                Preview
+              </p>
+
+              <img
+                src={screenshotPreview}
+                alt="Selected screenshot preview"
+                className="max-h-96 rounded-xl border border-slate-700 object-contain"
+              />
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleScreenshotAnalysis}
+            disabled={!screenshot || isAnalyzing}
+            className="mt-5 rounded-xl bg-cyan-400 px-6 py-3 font-bold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
+          >
+            {isAnalyzing
+              ? "Analyzing..."
+              : "Analyze screenshot"}
+          </button>
+        </section>
+      {ocrText && (
+          <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <h2 className="text-2xl font-bold">
+              Extracted text
+            </h2>
+
+            <p className="mt-2 text-sm text-slate-400">
+              Text detected from the uploaded screenshot.
+            </p>
+
+            <pre className="mt-4 whitespace-pre-wrap rounded-xl border border-slate-700 bg-slate-950 p-4 font-sans leading-7 text-slate-300">
+              {ocrText}
+            </pre>
+          </section>
+        )}
         {result && (
           <section className="mt-8 space-y-6" aria-live="polite">
             <article

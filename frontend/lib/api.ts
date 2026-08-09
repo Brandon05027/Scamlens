@@ -1,4 +1,4 @@
-import type { AnalysisResult } from "@/types/analysis";
+import type { AnalysisResult, ScreenshotAnalysisResponse } from "@/types/analysis";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
@@ -42,4 +42,41 @@ export async function analyzeText(text: string): Promise<AnalysisResult> {
   }
 
   return (await response.json()) as AnalysisResult;
+}
+export async function analyzeScreenshot(
+  file: File,
+): Promise<ScreenshotAnalysisResponse> {
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_URL ??
+    "http://127.0.0.1:8000";
+
+  const formData = new FormData(); //not maually add the data, the browser should automatically create the required multipart boundary
+
+  formData.append("file", file);
+
+  const response = await fetch(
+    `${apiUrl}/api/v1/analyses/screenshot`,
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
+
+  if (!response.ok) {
+    let message = "Screenshot analysis failed.";
+
+    try {
+      const body = await response.json();
+
+      if (typeof body.detail === "string") {
+        message = body.detail;
+      }
+    } catch {
+      // Keep the fallback message.
+    }
+
+    throw new Error(message);
+  }
+
+  return response.json();
 }

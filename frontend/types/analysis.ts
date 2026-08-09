@@ -54,5 +54,14 @@ export interface AIAnalysis {
   evidence: AIEvidence[];
   limitations: string[];
   privacy_applied: boolean;
-  
 }
+
+export interface OCRAnalysis {
+  provider: string;
+  extracted_text: string;
+}
+//the frontends need to know the exact shape of JSON returned by the screenshot endpoint
+export interface ScreenshotAnalysisResponse {
+  ocr: OCRAnalysis;
+  analysis: AnalysisResult;
+}                                                 
