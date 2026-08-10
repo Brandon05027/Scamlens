@@ -71,4 +71,103 @@ SCAM_RULES: tuple[ScamRule, ...] = (
         ),
         score=10,
     ),
+        ScamRule(
+        rule_id="advance-payment-reimbursement",
+        title="Advance payment or reimbursement scheme",
+        category="fake_job",
+        severity=RuleSeverity.HIGH,
+        patterns=(
+            (
+                r"\bdeposit (?:the|a) "
+                r"(?:payment|funds|money) we send\b"
+            ),
+            (
+                r"\bdeposit (?:the|a) "
+                r"(?:payment|funds|money)\b"
+            ),
+        ),
+        explanation=(
+            "Scammers may send supposed funds first and ask the recipient "
+            "to deposit or use them before the payment is later reversed."
+        ),
+        score=20,
+    ),
+
+    ScamRule(
+        rule_id="account-verification-threat",
+        title="Account verification threat",
+        category="phishing",
+        severity=RuleSeverity.HIGH,
+        patterns=(
+            (
+                r"\bconfirm your details\b"
+                r".{0,80}"
+                r"\b(?:service|account)\b"
+                r".{0,40}"
+                r"\b(?:not interrupted|suspended|restricted|closed)\b"
+            ),
+            (
+                r"\bverify your account\b"
+                r".{0,80}"
+                r"\b(?:suspended|restricted|closed)\b"
+            ),
+        ),
+        explanation=(
+            "Phishing messages often pressure recipients to confirm "
+            "account information by threatening loss of service or access."
+        ),
+        score=20,
+    ),
+
+    ScamRule(
+        rule_id="overpayment-forwarding",
+        title="Overpayment forwarding request",
+        category="payment_scam",
+        severity=RuleSeverity.HIGH,
+        patterns=(
+            (
+                r"\b(?:send|pay) extra money\b"
+                r".{0,100}"
+                r"\bforward the difference\b"
+            ),
+            (
+                r"\boverpay\b"
+                r".{0,100}"
+                r"\b(?:send|forward|return) "
+                r"(?:the )?(?:difference|remaining money)\b"
+            ),
+        ),
+        explanation=(
+            "Overpayment scams send more money than expected and ask the "
+            "recipient to forward part of it elsewhere before the original "
+            "payment is reversed."
+        ),
+        score=25,
+    ),
+
+    ScamRule(
+        rule_id="job-supplies-purchase",
+        title="Job supplies purchase request",
+        category="fake_job",
+        severity=RuleSeverity.HIGH,
+        patterns=(
+            (
+                r"\bselected without an interview\b"
+                r".{0,120}"
+                r"\bpurchase (?:the )?(?:required )?"
+                r"(?:supplies|equipment)\b"
+            ),
+            (
+                r"\bpurchase (?:the )?(?:required )?"
+                r"(?:supplies|equipment)\b"
+                r".{0,100}"
+                r"\breimbursement\b"
+            ),
+        ),
+        explanation=(
+            "Fake-job scams may ask applicants to purchase equipment or "
+            "supplies with a promise that the cost will later be reimbursed."
+        ),
+        score=20,
+    ),
 )

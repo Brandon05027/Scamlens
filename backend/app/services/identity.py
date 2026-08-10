@@ -202,6 +202,31 @@ def analyze_identity_signals(text: str) -> IdentityAnalysis:
         matches=tuple(matches),
     )
 
+def message_claims_company(
+    text: str,
+    company: str,
+) -> bool:
+    lowered_text = text.lower()
+
+    claim_patterns = (
+        f"i am from {company}",
+        f"i'm from {company}",
+        f"recruiter from {company}",
+        f"{company} recruiter",
+        f"{company} recruiting",
+        f"{company} hiring",
+        f"{company} hr",
+        f"representing {company}",
+        f"{company} security",
+        f"{company} support",
+        f"{company} account",
+    )
+
+    return any(
+        pattern in lowered_text
+        for pattern in claim_patterns
+    )
+
 def get_email_domain(email: str) -> str:
     _, _, domain = email.lower().rpartition("@")
     return domain
@@ -224,7 +249,10 @@ def find_company_domain_mismatches(
     matches: list[RuleMatch] = []
 
     for company, expected_domains in COMPANY_DOMAINS.items():
-        if company not in lowered_text:
+        if not message_claims_company(
+            text,
+            company,
+        ):
             continue
 
         for email in emails:

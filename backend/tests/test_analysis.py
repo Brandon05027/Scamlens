@@ -335,3 +335,179 @@ def test_company_email_subdomain_is_accepted() -> None:
     }
 
     assert "company-domain-mismatch" not in rule_ids
+
+def test_company_mention_without_claim_is_not_flagged() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "Microsoft was mentioned in our class presentation, "
+                "and my teammate can be reached at student@gmail.com."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    rule_ids = {
+        finding["rule_id"]
+        for finding in body["findings"]
+    }
+
+    assert "company-domain-mismatch" not in rule_ids
+
+def test_safe_banking_warning_is_not_flagged() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "The bank representative explained that I should "
+                "never send my banking information by email."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    rule_ids = {
+        finding["rule_id"]
+        for finding in body["findings"]
+    }
+
+    assert "bank-information-request" not in rule_ids
+
+def test_advance_payment_reimbursement_is_detected() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "The position is fully remote. Your equipment will "
+                "be arranged after you deposit the payment we send."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    assert body["risk_score"] >= 20
+def test_account_verification_threat_is_detected() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "There is a problem with your account. Confirm your "
+                "details today so service is not interrupted."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    assert body["risk_score"] >= 20
+def test_overpayment_forwarding_is_detected() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "I cannot meet in person, but I can send extra money "
+                "if you forward the difference to my courier."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    assert body["risk_score"] >= 20
+def test_job_supply_purchase_is_detected() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "You have been selected without an interview. "
+                "Purchase the required supplies and reimbursement "
+                "will follow."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    assert body["risk_score"] >= 20
+
+def test_real_banking_information_request_is_detected() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "Reply immediately with your banking information "
+                "so we can process the payment."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    rule_ids = {
+        finding["rule_id"]
+        for finding in body["findings"]
+    }
+
+    assert "bank-information-request" in rule_ids
+
+def test_google_security_email_domain_mismatch_is_detected() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "Google security needs you to continue your "
+                "verification through google.security.review@gmail.com."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    rule_ids = {
+        finding["rule_id"]
+        for finding in body["findings"]
+    }
+
+    assert "company-domain-mismatch" in rule_ids
+
+def test_google_security_matching_domain_is_not_flagged() -> None:
+    response = client.post(
+        "/api/v1/analyses/text",
+        json={
+            "text": (
+                "Google security can be reached at "
+                "support@google.com for account assistance."
+            )
+        },
+    )
+
+    assert response.status_code == 200, response.json()
+
+    body = response.json()
+
+    rule_ids = {
+        finding["rule_id"]
+        for finding in body["findings"]
+    }
+
+    assert "company-domain-mismatch" not in rule_ids

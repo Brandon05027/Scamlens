@@ -1,0 +1,183 @@
+[
+  {
+    "id": "scam-001",
+    "label": "scam",
+    "category": "fake_job",
+    "text": "Congratulations on your remote job offer. We will send you a check and you must use the money to purchase work equipment."
+  },
+  {
+    "id": "scam-002",
+    "label": "scam",
+    "category": "credential_theft",
+    "text": "Reply immediately with your banking information so we can complete your payment."
+  },
+  {
+    "id": "scam-003",
+    "label": "scam",
+    "category": "payment_scam",
+    "text": "You must purchase Apple gift cards today and send us the card numbers."
+  },
+  {
+    "id": "scam-004",
+    "label": "scam",
+    "category": "phishing",
+    "text": "Verify your account immediately at http://192.168.10.20/login or access will be suspended."
+  },
+  {
+    "id": "scam-005",
+    "label": "scam",
+    "category": "phishing",
+    "text": "Microsoft recruiting selected you for a position. Contact microsoftjobs2026@gmail.com to continue."
+  },
+  {
+    "id": "scam-006",
+    "label": "scam",
+    "category": "social_engineering",
+    "text": "Final warning. Act now within 30 minutes or your account will be permanently closed."
+  },
+  {
+    "id": "scam-007",
+    "label": "scam",
+    "category": "payment_scam",
+    "text": "Purchase Steam gift cards immediately to pay the outstanding balance."
+  },
+  {
+    "id": "scam-008",
+    "label": "scam",
+    "category": "fake_job",
+    "text": "We will send you a cashier's check. Deposit the check and use the funds for your new home office."
+  },
+  {
+    "id": "scam-009",
+    "label": "scam",
+    "category": "credential_theft",
+    "text": "Send your account number and routing number now so your refund can be processed."
+  },
+  {
+    "id": "scam-010",
+    "label": "scam",
+    "category": "phishing",
+    "text": "Your account requires verification. Open https://bit.ly/example-login immediately to avoid suspension."
+  },
+
+  {
+    "id": "legit-001",
+    "label": "legitimate",
+    "category": "normal",
+    "text": "Our computer science study group will meet in the library tomorrow afternoon."
+  },
+  {
+    "id": "legit-002",
+    "label": "legitimate",
+    "category": "normal",
+    "text": "The professor moved tomorrow's lecture to room 204 in the engineering building."
+  },
+  {
+    "id": "legit-003",
+    "label": "legitimate",
+    "category": "normal",
+    "text": "Microsoft interview scheduling is available through recruiter@microsoft.com for candidates already in the process."
+  },
+  {
+    "id": "legit-004",
+    "label": "legitimate",
+    "category": "normal",
+    "text": "Course information and academic resources are available at https://www.rutgers.edu/academics."
+  },
+  {
+    "id": "legit-005",
+    "label": "legitimate",
+    "category": "normal",
+    "text": "Please bring your student identification card to the advising appointment on Thursday."
+  },
+  {
+    "id": "legit-006",
+    "label": "legitimate",
+    "category": "normal",
+    "text": "The project meeting begins at 3 PM and the presentation slides are due by Friday."
+  },
+  {
+    "id": "legit-007",
+    "label": "legitimate",
+    "category": "normal",
+    "text": "Your package was delivered to the apartment front desk and is available for pickup."
+  },
+  {
+    "id": "legit-008",
+    "label": "legitimate",
+    "category": "normal",
+    "text": "The internship information session will include recruiters discussing software engineering opportunities."
+  },
+  {
+    "id": "legit-009",
+    "label": "legitimate",
+    "category": "normal",
+    "text": "Contact the scholarship office at help@example.edu if you have questions about the application."
+  },
+  {
+    "id": "legit-010",
+    "label": "legitimate",
+    "category": "normal",
+    "text": "The basketball club practice schedule has been updated for next week."
+  }
+  ,{
+  "id": "legit-011",
+  "label": "legitimate",
+  "category": "normal",
+  "text": "Reminder: please submit your assignment immediately because the deadline is tonight."
+},
+{
+  "id": "legit-012",
+  "label": "legitimate",
+  "category": "normal",
+  "text": "The bank representative explained that I should never send my banking information by email."
+},
+{
+  "id": "legit-013",
+  "label": "legitimate",
+  "category": "normal",
+  "text": "My friend sent me this shortened link https://bit.ly/example-page to the event registration page."
+},
+{
+  "id": "legit-014",
+  "label": "legitimate",
+  "category": "normal",
+  "text": "The accounting lecture discussed how fake checks are commonly used in employment scams."
+},
+{
+  "id": "legit-015",
+  "label": "legitimate",
+  "category": "normal",
+  "text": "Microsoft was mentioned in our class presentation, and my teammate can be reached at student@gmail.com."
+},
+{
+  "id": "scam-011",
+  "label": "scam",
+  "category": "fake_job",
+  "text": "The position is fully remote. Your equipment will be arranged after you deposit the payment we send."
+},
+{
+  "id": "scam-012",
+  "label": "scam",
+  "category": "phishing",
+  "text": "There is a problem with your account. Confirm your details today so service is not interrupted."
+},
+{
+  "id": "scam-013",
+  "label": "scam",
+  "category": "marketplace",
+  "text": "I cannot meet in person, but I can send extra money if you forward the difference to my courier."
+},
+{
+  "id": "scam-014",
+  "label": "scam",
+  "category": "fake_job",
+  "text": "You have been selected without an interview. Purchase the required supplies and reimbursement will follow."
+},
+{
+  "id": "scam-015",
+  "label": "scam",
+  "category": "phishing",
+  "text": "Google security needs you to continue your verification through google.security.review@gmail.com."
+}
+]
