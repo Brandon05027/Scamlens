@@ -1,4 +1,6 @@
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 from app.services.ai.models import AIContextResult
 from app.services.ai.providers import (
@@ -43,12 +45,18 @@ def build_ai_provider() -> AIProvider:
     )
 
 
+#The logger is safer allow us to get enough information to debug without receiving sus info from the users
 def analyze_with_ai(
     redacted_text: str,
     provider: AIProvider | None = None,
 ) -> tuple[str, str, AIContextResult | None]:
+    selected_provider = provider
+
     try:
-        selected_provider = provider or build_ai_provider() #if a test supplies the provider then selected_provider = provider will be used. If not, it will use the normal provider from the env.
+        selected_provider = (
+            selected_provider
+            or build_ai_provider()
+        )
 
         result = selected_provider.analyze(
             redacted_text
@@ -61,8 +69,19 @@ def analyze_with_ai(
         )
 
     except Exception:
+        provider_name = getattr(
+            selected_provider,
+            "name",
+            "unknown",
+        )
+
+        logger.exception(
+            "AI contextual analysis failed for provider %s",
+            provider_name,
+        )
+
         return (
             "unavailable",
             "none",
             None,
-        )
+        ) 

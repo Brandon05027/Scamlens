@@ -7,12 +7,18 @@ from app.schemas.analysis import OCRAnalysisResponse,ScreenshotAnalysisResponse
 from app.services.analysis import analyze_text
 from app.services.ocr import extract_text_from_image
 
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
+from app.services.rate_limit import limiter
+
 
 from fastapi import (
     FastAPI,
     File,
     HTTPException,
     UploadFile,
+    Request,
 )
 
 
@@ -20,6 +26,13 @@ app = FastAPI(
     title="ScamLens API",
     description="API for explainable scam-content analysis.",
     version="0.1.0",
+)
+
+app.state.limiter = limiter
+
+app.add_exception_handler(
+    RateLimitExceeded,
+    _rate_limit_exceeded_handler,
 )
 
 app.add_middleware(
@@ -44,10 +57,12 @@ def health_check() -> dict[str, str]:
     "/api/v1/analyses/text",
     response_model=AnalysisResponse,
 )
+@limiter.limit("30/minute")
 def create_text_analysis(
-    request: TextAnalysisRequest,
+    request: Request, 
+    payload: TextAnalysisRequest,
 ) -> AnalysisResponse:
-    return analyze_text(request.text)
+    return analyze_text(payload.text)
 
 ALLOWED_IMAGE_TYPES = {
     "image/png",
@@ -56,11 +71,15 @@ ALLOWED_IMAGE_TYPES = {
 }
 
 MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024 #5MB
+
 @app.post(
     "/api/v1/analyses/screenshot",
     response_model=ScreenshotAnalysisResponse,
 )
+@limiter.limit ("10/minute")
+
 async def create_screenshot_analysis(
+    request:Request, # It determine who should be rate limited.
     file: UploadFile = File(...),
 ) -> ScreenshotAnalysisResponse:
     if file.content_type not in ALLOWED_IMAGE_TYPES:
