@@ -2,13 +2,14 @@
 from io import BytesIO
 from typing import Protocol
 
+import os
 import pytesseract
 from PIL import Image, UnidentifiedImageError
 
+TESSERACT_CMD = os.getenv("TESSERACT_CMD")
 
-TESSERACT_PATH = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-
-pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
+if TESSERACT_CMD:
+    pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
 
 
 class OCRProvider(Protocol):
