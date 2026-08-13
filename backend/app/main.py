@@ -1,8 +1,6 @@
-from fastapi import FastAPI
+import os
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.schemas.analysis import TextAnalysisRequest
-from app.schemas.analysis import AnalysisResponse, TextAnalysisRequest
 from app.schemas.analysis import OCRAnalysisResponse,ScreenshotAnalysisResponse
 from app.services.analysis import analyze_text
 from app.services.ocr import extract_text_from_image
@@ -12,6 +10,12 @@ from slowapi.errors import RateLimitExceeded
 
 from app.services.rate_limit import limiter
 
+from app.schemas.analysis import (
+    AnalysisResponse,
+    OCRAnalysisResponse,
+    ScreenshotAnalysisResponse,
+    TextAnalysisRequest,
+)
 
 from fastapi import (
     FastAPI,
@@ -21,6 +25,14 @@ from fastapi import (
     Request,
 )
 
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "SCAMLENS_CORS_ORIGINS",
+        "http://localhost:3000",
+    ).split(",")
+    if origin.strip()
+]
 
 app = FastAPI(
     title="ScamLens API",
@@ -37,7 +49,7 @@ app.add_exception_handler(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
